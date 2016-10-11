@@ -12,15 +12,13 @@ function getRearFacingVideoSource() {
 
   return getDevices().then(sources => {
 
-    const videoSources = sources.filter(source => source.kind === 'videoinput');
-
-    if (!videoSources.length) {
+    if (!sources.length) {
       throw new Error('Could not find any video sources');
     }
 
     let rearVideoSource;
 
-    videoSources.some(sourceInfo => {
+    sources.some(sourceInfo => {
       const labelLower = sourceInfo.label.toLowerCase();
       if (
         labelLower.indexOf('back') !== -1
@@ -33,7 +31,7 @@ function getRearFacingVideoSource() {
       return false;
     });
 
-    return rearVideoSource || videoSources[0];
+    return rearVideoSource || sources[0];
 
   });
 
@@ -43,15 +41,13 @@ function getSourceByDeviceId(deviceId) {
 
   return getDevices().then(sources => {
 
-    const videoSources = sources.filter(source => source.kind === 'videoinput');
-
-    if (!videoSources.length) {
+    if (!sources.length) {
       throw new Error('Could not find any video sources');
     }
 
     return (
-      videoSources.filter(sourceInfo => sourceInfo.deviceId === deviceId)[0]
-      || videoSources[0]
+      sources.filter(sourceInfo => sourceInfo.deviceId === deviceId)[0]
+      || sources[0]
     );
 
   });
@@ -83,5 +79,7 @@ export function askPermission() {
 }
 
 export function getDevices() {
-  return navigator.mediaDevices.enumerateDevices();
+  return navigator.mediaDevices.enumerateDevices().then(sources => (
+    sources.filter(source => source.kind === 'videoinput')
+  ));
 }
