@@ -1,3 +1,7 @@
+// for pausing promises when there is an inflight permission request
+let askingPermissionPromise = false;
+let hasPermission = false;
+
 function getVideoBySource(videoSource) {
   const constraints = {
     video: {
@@ -59,27 +63,54 @@ function handleError(error) {
   console.error('navigator.getUserMedia error: ', error);
 }
 
-export default function getVideoStream(deviceId) {
+export function askPermission() {
 
-  const streamPromise = askPermission();
-
-  if (deviceId) {
-    streamPromise.then(_ => getSourceByDeviceId(deviceId));
-  } else {
-    streamPromise.then(getRearFacingVideoSource);
+  // Already has permission, so resolve immediately
+  if (hasPermission) {
+    return Promise.resolve();
   }
 
-  return streamPromise
-    .then(getVideoBySource)
-    .catch(handleError);
-}
+  // There's already a permission request in flight
+  // So return that promise (aka; queue up while we wait)
+  if (askingPermissionPromise) {
+    return askingPermissionPromise;
+  }
 
-export function askPermission() {
-  return getVideoBySource();
+  // Trigger an ask for permission dialog
+  askingPermissionPromise = getVideoBySource().then(_ => {
+    // Permission received! Nothing in flight, so remove reference to stored
+    // promise
+    askingPermissionPromise = null;
+    hasPermission = true;
+  });
+
+  return askingPermissionPromise;
 }
 
 export function getDevices() {
   return navigator.mediaDevices.enumerateDevices().then(sources => (
     sources.filter(source => source.kind === 'videoinput')
   ));
+}
+
+/**
+ * @param deviceId {String|null} The device ID to get the stream for. If
+ * omitted, will attempt to get the rear-facing video stream. If rear-facing
+ * video stream not detected, will get the first video stream found.
+ *
+ * @return {source, stream}. source: MediaDeviceInfo. stream: MediaStream.
+ */
+export default function getVideoStream(deviceId) {
+
+  let streamPromise = askPermission();
+
+  if (deviceId) {
+    streamPromise = streamPromise.then(_ => getSourceByDeviceId(deviceId));
+  } else {
+    streamPromise = streamPromise.then(getRearFacingVideoSource);
+  }
+
+  return streamPromise
+    .then(source => getVideoBySource(source).then(stream => ({source, stream})))
+    .catch(handleError);
 }
