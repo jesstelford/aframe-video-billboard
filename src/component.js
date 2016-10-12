@@ -90,6 +90,10 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
      */
     init() {
       this._videoId = cuid();
+      this._activeVideo = {
+        source: null,
+        stream: null,
+      };
     },
 
     /**
@@ -98,19 +102,19 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
      */
     update() {
 
-      getVideoStream(this.data.deviceId).then(videoStream => {
+      getVideoStream(this.data.deviceId).then(({source, stream}) => {
+
+        this._activeVideo.soure = source;
+        this._activeVideo.stream = stream;
 
         // Creating an aframe asset out of a new video tag
         const videoEl = createVideoElementAsAsset(this._videoId);
         const entityEl = this.el;
 
-        // And starting the video streaming
-        videoEl.srcObject = videoStream;
-
         const onLoadedMetaData = _ => {
 
           // Only want this event listener to execute once
-          videoEl.removeEventListener('loadedmetadata', onLoadedMetaData);
+          videoEl.removeEventListener('loadeddata', onLoadedMetaData);
 
           videoEl.play();
 
@@ -126,12 +130,14 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
           entityEl.setAttribute('width', width);
           entityEl.setAttribute('height', height);
 
-          entityEl.emit(PLAY_EVENT, {stream: videoStream});
+          entityEl.emit(PLAY_EVENT, {source, stream});
         };
 
-        videoEl.addEventListener('loadedmetadata', onLoadedMetaData);
+        videoEl.addEventListener('loadeddata', onLoadedMetaData);
 
-        this._permissionGranted = true;
+        // And starting the video streaming
+        videoEl.srcObject = stream;
+
         this._videoElement = videoEl;
 
       }).catch(error => {
@@ -173,21 +179,12 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
     },
 
     getDevices() {
+      return askPermission()
+        .then(getDevices);
+    },
 
-      if (!this._permissionGranted) {
-        return askPermission()
-          .then(_ => {
-            this._permissionGranted = true;
-          })
-          .then(getDevices)
-          .catch(error => {
-            // TODO: Check error.name for 'PermissionDeniedError'?
-            // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-            this.el.emit(PERMISSION_DENIED_EVENT, {error});
-          });
-      }
-
-      return getDevices();
+    getActiveDevice() {
+      return this.activeVideo.source;
     },
   });
 }
