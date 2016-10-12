@@ -115,7 +115,10 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
 
         const isFirstPlay = !this._permissionGranted;
 
-        videoEl.addEventListener('loadedmetadata', _ => {
+        const onLoadedMetaData = _ => {
+
+          // Only want this event listener to execute once
+          videoEl.removeEventListener('loadedmetadata', onLoadedMetaData);
 
           videoEl.play();
 
@@ -138,7 +141,9 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
           }
 
           entityEl.emit(PLAY_EVENT, {stream: videoStream});
-        });
+        };
+
+        videoEl.addEventListener('loadedmetadata', onLoadedMetaData);
 
         this._permissionGranted = true;
         this._videoElement = videoEl;
