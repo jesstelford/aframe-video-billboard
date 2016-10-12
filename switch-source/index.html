@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>A-Frame Video Billboard - Switch Source</title>
+    <script src="https://unpkg.com/webrtc-adapter/out/adapter.js"></script>
+    <script src="../build.js"></script>
+  </head>
+  <body>
+    <a-scene>
+
+      <a-video-billboard video-billboard="minWidth: 10;" position="0 1.25 -1"></a-video-billboard>
+      <a-box position="-1 0.5 1" rotation="0 45 0" color="#4CC3D9"></a-box>
+      <a-cylinder position="1 0.75 1" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
+      <a-sky color="#ECECEC"></a-sky>
+
+      <a-entity position="0 0 3.8">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+    <select style="position: fixed; top: 10; left: 10;"></select>
+    <script>
+      let el = document.querySelector('a-video-billboard')
+      let selectEl = document.querySelector('select');
+
+      // Get all the attached video devices
+      el.components['video-billboard'].getDevices().then(sources => {
+        sources.forEach(createAndAttachOption);
+        selectEl.style.display = 'block';
+      });
+
+      // Every time the video source is changed, it will trigger a `video-play` event
+      el.addEventListener('video-play', ({detail: {source}}) => {
+        // Find the <option> that matches the playing source
+        const activeOption = selectEl.querySelector('option[value="' + source.deviceId + '"]')
+        // And ensure it's the selected one
+        activeOption.selected = 'selected';
+      });
+
+      selectEl.addEventListener('change', function(event) {
+        // The selected value is the deviceId
+        // So we update the component with that value
+        el.setAttribute('video-billboard', 'deviceId', selectEl.value);
+      });
+
+      function createAndAttachOption(source) {
+        const opt = document.createElement('option');
+        opt.value = source.deviceId;
+        opt.innerHTML = source.label;
+        selectEl.appendChild(opt);
+      }
+    </script>
+  </body>
+</html>
