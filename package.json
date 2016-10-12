@@ -1,6 +1,6 @@
 {
   "name": "aframe-video-billboard",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Video Billboard entity & component for A-Frame.",
   "main": "lib/index.js",
   "scripts": {
