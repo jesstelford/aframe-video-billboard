@@ -23,7 +23,9 @@ function createVideoElementAsAsset(id) {
     document.querySelector('a-scene').appendChild(assets);
   }
 
-  assets.appendChild(video);
+  if (!assets.contains(video)) {
+    assets.appendChild(video);
+  }
 
   return video;
 }
@@ -144,6 +146,10 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
      * Generally undoes all modifications to the entity.
      */
     remove() {
+      if (this._videoElement) {
+        this._videoElement.parentNode.removeChild(this._videoElement);
+        this._videoElement = null;
+      }
     },
 
     /**
@@ -151,7 +157,9 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
      * Use to stop or remove any dynamic or background behavior such as events.
      */
     pause() {
-      this._videoElement && this._videoElement.pause();
+      if (this._videoElement) {
+        this._videoElement.pause();
+      }
     },
 
     /**
@@ -159,7 +167,9 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
      * Use to continue or add any dynamic or background behavior such as events.
      */
     play() {
-     this._videoElement && this._videoElement.play();
+      if (this._videoElement) {
+        this._videoElement.play();
+      }
     },
 
     getDevices() {
