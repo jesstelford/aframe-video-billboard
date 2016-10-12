@@ -2,7 +2,6 @@ import cuid from 'cuid';
 import {default as getVideoStream, getDevices, askPermission} from './video-stream';
 
 const PERMISSION_DENIED_EVENT = 'video-permission-denied';
-const FIRST_PLAY_EVENT = 'video-first-play';
 const PLAY_EVENT = 'video-play';
 
 function createVideoElementAsAsset(id) {
@@ -15,11 +14,6 @@ function createVideoElementAsAsset(id) {
 
   video.setAttribute('id', id);
   video.setAttribute('autoplay', true);
-
-  // TODO: Calculate from video source?
-  video.setAttribute('width', '640');
-  video.setAttribute('height', '480');
-
   video.setAttribute('src', '');
 
   let assets = document.querySelector('a-assets');
@@ -99,8 +93,6 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
     /**
      * Called when component is attached and when component data changes.
      * Generally modifies the entity based on the data.
-     *
-     * @param oldData
      */
     update() {
 
@@ -112,8 +104,6 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
 
         // And starting the video streaming
         videoEl.srcObject = videoStream;
-
-        const isFirstPlay = !this._permissionGranted;
 
         const onLoadedMetaData = _ => {
 
@@ -133,12 +123,6 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
           // Set the width and height correctly
           entityEl.setAttribute('width', width);
           entityEl.setAttribute('height', height);
-
-          if (isFirstPlay) {
-            // event useful for detecting if user has granted permissions and
-            // video is now playing
-            entityEl.emit(FIRST_PLAY_EVENT, {stream: videoStream});
-          }
 
           entityEl.emit(PLAY_EVENT, {stream: videoStream});
         };
