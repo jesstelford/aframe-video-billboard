@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][]
 
+### Fixed
+
+- Set correct default value of `''` for `deviceId` (required for aframe 0.4.0)
+
 ## [1.0.0][] - 2016-11-25
 
 ### Initial release

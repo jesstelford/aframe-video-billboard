@@ -66,11 +66,14 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
   aframe.registerComponent(componentName, {
     schema: {
       /*
-       * @param {string} [deviceId=null] - Select the specific device for
+       * @param {string} [deviceId=''] - Select the specific device for
        * display. Note that if it is not a valid video device, nothing will be
        * shown.
        */
-      deviceId: {default: null},
+      deviceId: {
+        default: '',
+        type: 'string',
+      },
 
       /*
        * @param {number} [minWidth=4] - The minimum width in world-units to

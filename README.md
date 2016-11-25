@@ -60,7 +60,7 @@ _Note: The `<a-video-billboard>` entity automatically includes the
 
 | attribute | type | default | description |
 |---|---|---|---|
-| `deviceId` | string | `null` | Select the specific device for display. If omitted, will attempt to get the rear-facing video stream. If rear-facing video stream not detected, will get the first video stream found. Note that if it is not a valid video device, nothing will be shown. |
+| `deviceId` | string | `''` | Select the specific device for display. If omitted, will attempt to get the rear-facing video stream. If rear-facing video stream not detected, will get the first video stream found. Note that if it is not a valid video device, nothing will be shown. |
 | `minWidth` | number | 4 | The minimum width in world-units to display the video. Video aspect ratio will be preserved. |
 | `minHeight` | number | 3 | The minimum height in world-units to display the video. Video aspect ratio will be preserved. |
 
