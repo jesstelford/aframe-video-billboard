@@ -117,8 +117,8 @@ export default function getVideoStream(deviceId) {
           source,
           stream,
           stop: _ => stream.getTracks().forEach(track => track.stop()),
-          pause: _ => stream.getTracks().forEach(track => track.enabled = false),
-          play: _ => stream.getTracks().forEach(track => track.enabled = true),
+          pause: _ => stream.getTracks().forEach(track => { track.enabled = false; }),
+          play: _ => stream.getTracks().forEach(track => { track.enabled = true; }),
         }))
     ))
     .catch(handleError);
