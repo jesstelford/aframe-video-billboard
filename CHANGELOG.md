@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][]
 
+### Fixed
+
+- Execute correct function to set dimesions (not dimentions...)
+
 ## [1.0.1][] - 2016-11-25
 
 ### Fixed

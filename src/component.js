@@ -88,7 +88,7 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
       minHeight: {default: 3},
     },
 
-    setDimentions() {
+    setDimensions() {
       const entityEl = this.el;
       const videoEl = this._videoElement;
       const {width, height} = shrinkwrapMinDimensions(
@@ -164,7 +164,7 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
           // Pointing this aframe entity to that video as its source
           entityEl.setAttribute('src', `#${this._videoId}`);
 
-          this.setDimentions();
+          this.setDimensions();
 
           entityEl.emit(PLAY_EVENT, {source, stream});
         };
