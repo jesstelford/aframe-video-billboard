@@ -85,27 +85,67 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
       minHeight: {default: 3},
     },
 
+    setDimentions() {
+      const entityEl = this.el;
+      const videoEl = this._videoElement;
+      const {width, height} = shrinkwrapMinDimensions(
+        {width: this.data.minWidth, height: this.data.minHeight},
+        {width: videoEl.videoWidth, height: videoEl.videoHeight}
+      );
+
+      // Set the width and height correctly
+      entityEl.setAttribute('width', width);
+      entityEl.setAttribute('height', height);
+    },
+
     /**
      * Called once when component is attached. Generally for initial setup.
      */
-    init() {
-      this._videoId = cuid();
-      this._activeVideo = {
-        source: null,
-        stream: null,
-      };
-    },
+    init() {},
 
     /**
      * Called when component is attached and when component data changes.
      * Generally modifies the entity based on the data.
      */
-    update() {
+    update(oldData) {
 
-      getVideoStream(this.data.deviceId).then(({source, stream}) => {
+      if (aframe.utils.deepEqual(oldData, this.data)) {
+        return;
+      }
+
+      if (
+        this._videoElement
+        && (
+          oldData.minWidth !== this.data.minWidth
+          || oldData.minHeight !== this.data.minHeight
+        )
+      ) {
+        this.setDimensions();
+      }
+
+      if (oldData.deviceId === this.data.deviceId) {
+        return;
+      }
+      // From hree on, device id has changed
+
+      this.cleanUp();
+
+      this._videoId = cuid();
+      this._activeVideo = {
+        source: null,
+        stream: null,
+        stop: null,
+        pause: null,
+        play: null,
+      };
+
+      getVideoStream(this.data.deviceId).then(({source, stream, stop, play, pause}) => {
 
         this._activeVideo.soure = source;
         this._activeVideo.stream = stream;
+        this._activeVideo.stop = stop;
+        this._activeVideo.pause = pause;
+        this._activeVideo.play = play;
 
         // Creating an aframe asset out of a new video tag
         const videoEl = createVideoElementAsAsset(this._videoId);
@@ -121,14 +161,7 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
           // Pointing this aframe entity to that video as its source
           entityEl.setAttribute('src', `#${this._videoId}`);
 
-          const {width, height} = shrinkwrapMinDimensions(
-            {width: this.data.minWidth, height: this.data.minHeight},
-            {width: videoEl.videoWidth, height: videoEl.videoHeight}
-          );
-
-          // Set the width and height correctly
-          entityEl.setAttribute('width', width);
-          entityEl.setAttribute('height', height);
+          this.setDimentions();
 
           entityEl.emit(PLAY_EVENT, {source, stream});
         };
@@ -147,15 +180,35 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
       });
     },
 
+    cleanUp() {
+      if (this._videoElement) {
+        this.el.removeAttribute('src');
+        this._videoElement.srcObject = null;
+        this._videoElement.parentNode.removeChild(this._videoElement);
+        this._videoElement = null;
+      }
+
+      if (this._activeVideo && this._activeVideo.stop) {
+        // stop the stream
+        this._activeVideo.stop();
+      }
+
+      this._videoId = undefined;
+      this._activeVideo = {
+        source: null,
+        stream: null,
+        stop: null,
+        pause: null,
+        play: null,
+      };
+    },
+
     /**
      * Called when a component is removed (e.g., via removeAttribute).
      * Generally undoes all modifications to the entity.
      */
     remove() {
-      if (this._videoElement) {
-        this._videoElement.parentNode.removeChild(this._videoElement);
-        this._videoElement = null;
-      }
+      this.cleanUp();
     },
 
     /**
@@ -166,6 +219,10 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
       if (this._videoElement) {
         this._videoElement.pause();
       }
+
+      if (this._activeVideo && this._activeVideo.pause) {
+        this._activeVideo.pause();
+      }
     },
 
     /**
@@ -175,6 +232,10 @@ export default function aframeVideoBillboardComponent(aframe, componentName) {
     play() {
       if (this._videoElement) {
         this._videoElement.play();
+      }
+
+      if (this._activeVideo && this._activeVideo.play) {
+        this._activeVideo.play();
       }
     },
 

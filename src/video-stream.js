@@ -111,6 +111,15 @@ export default function getVideoStream(deviceId) {
   }
 
   return streamPromise
-    .then(source => getVideoBySource(source).then(stream => ({source, stream})))
+    .then(source => (
+      getVideoBySource(source)
+        .then(stream => ({
+          source,
+          stream,
+          stop: _ => stream.getTracks().forEach(track => track.stop()),
+          pause: _ => stream.getTracks().forEach(track => track.enabled = false),
+          play: _ => stream.getTracks().forEach(track => track.enabled = true),
+        }))
+    ))
     .catch(handleError);
 }
